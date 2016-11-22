@@ -7,7 +7,7 @@ library(plyr)
 fileCon <- gzfile('~/Dota/data/raw_data.gz', open="rb")
 
 # Initiate all variables needed for the homemade stream function
-NUM_MATCHES <- 1000
+NUM_MATCHES <- 100
 match.count <- 0
 line.count <- 0
 
@@ -46,21 +46,62 @@ while(match.count < NUM_MATCHES) {
       gpm <- readJSON$players$gold_per_min[j]
       xpm <- readJSON$players$xp_per_min[j]
       abandon <- ifelse(readJSON$players$leaver_status == 3, 1, 0)
+      
+      if ("npc_dota_roshan" %in% names(readJSON$players$killed)) {
+        ancient.kills <- readJSON$players$killed$npc_dota_roshan
+      } else {
+        ancient.kills <- 0
+      }
       #ancient.kills <- readJSON$ancientkills
-      #roshan.kills <- readJSON$playersnpc_dota_roshan
+      
       if ("CHAT_MESSAGE_FIRSTBLOOD" %in% readJSON$objectives$type) {
         first.blood <- ifelse(readJSON$objectives$player1[which(readJSON$objectives$type == "CHAT_MESSAGE_FIRSTBLOOD")] == (j-1), 1, 0)
+      } else {
+        first.blood <- 0
       }
-      # if(exists(readJSON$players$multi_kills)) {
-      #   
-      # }
-      # doublekills <- ifelse(readJSON$players$multi_kills$2
-      # triplekills <- readJSON$triplekills
-      # ultrakills <- readJSON$ultrakills
-      # rampages <- readJSON$rampeges
-      #best.streak <- getbestkillstreak
-      sentries.placed <- length(readJSON$players$sen_log[[j]])
-      obs.placed <- length(readJSON$players$obs_log[[j]])
+      
+      if ("multi_kills" %in% names(readJSON$players)) {
+        if ("5" %in% names(readJSON$players$multi_kills)) {
+          doublekills <- readJSON$players$multi_kills[j, 1]
+          triplekills <- readJSON$players$multi_kills[j, 2]
+          ultrakills <- readJSON$players$multi_kills[j, 3]
+          rampages <- rowSums(data.frame(readJSON$players$multi_kills[j, 4:ncol(readJSON$players$multi_kills)]))
+        } else if ("4" %in% names(readJSON$players$multi_kills)) {
+          doublekills <- readJSON$players$multi_kills[j, 1]
+          triplekills <- readJSON$players$multi_kills[j, 2]
+          ultrakills <- readJSON$players$multi_kills[j, 3]
+          rampages <- 0
+        } else if ("3" %in% names(readJSON$players$multi_kills)) {
+          doublekills <- readJSON$players$multi_kills[j, 1]
+          triplekills <- readJSON$players$multi_kills[j, 2]
+          ultrakills <- 0
+          rampages <- 0
+        } else {
+          doublekills <- readJSON$players$multi_kills[j, 1]
+          triplekills <- 0
+          ultrakills <- 0
+          rampages <- 0
+        }
+      }
+      
+      if ("kill_streats" %in% names(readJSON$players)) {
+        max.streak <- max(as.integer(colnames(readJSON$players$kill_streaks[j, which(!is.na(readJSON$players$kill_streaks[j, ]))])))
+      } else {
+        max.streak <- 0
+      }
+      
+      if ("sen_log" %in% names(readJSON$players)) {
+        sentries.placed <- length(readJSON$players$sen_log[[j]])
+      } else {
+        sentries.placed <- 0
+      }
+      
+      if ("obs_log" %in% names(readJSON$players)) {
+        obs.placed <- length(readJSON$players$obs_log[[j]])
+      } else {
+        obs.placed <- 0
+      }
+      
       hero.data <- rbind(hero.data, data.frame(match.id,
                                           hero.id,
                                           hero.radiant,
