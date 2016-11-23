@@ -7,7 +7,7 @@ library(plyr)
 fileCon <- gzfile('~/Dota/data/raw_data.gz', open="rb")
 
 # Initiate all variables needed for the homemade stream function
-NUM_MATCHES <- 100
+NUM_MATCHES <- 1000
 match.count <- 0
 line.count <- 0
 
@@ -123,3 +123,10 @@ while(match.count < NUM_MATCHES) {
     }
   }
 }
+
+full.data <- left_join(hero.data, macro.data,
+                       by = c("match.id" = "match.id"))
+full.data$won <- ifelse(full.data$hero.radiant == 1, ifelse(full.data$radiant.win == T, 1, 0),
+                        ifelse(full.data$radiant.win == F, 1, 0))
+full.data <- select(full.data, -radiant.win, -hero.radiant)
+
