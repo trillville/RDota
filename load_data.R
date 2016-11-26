@@ -1,13 +1,16 @@
 # Load the libraries
 library(jsonlite)
 library(data.table)
-library(plyr)
+library(dplyr)
 
 # Initiate a file connection
 fileCon <- gzfile('~/Dota/data/raw_data.gz', open="rb")
 
+
+zz <- stream_in(fileCon, pagesize = 10000, progress = "=")
+
 # Initiate all variables needed for the homemade stream function
-NUM_MATCHES <- 1000
+NUM_MATCHES <- 5000
 match.count <- 0
 line.count <- 0
 
@@ -48,9 +51,9 @@ while(match.count < NUM_MATCHES) {
       abandon <- ifelse(readJSON$players$leaver_status == 3, 1, 0)
       
       if ("npc_dota_roshan" %in% names(readJSON$players$killed)) {
-        ancient.kills <- readJSON$players$killed$npc_dota_roshan
+        roshan.kills <- readJSON$players$killed$npc_dota_roshan
       } else {
-        ancient.kills <- 0
+        roshan.kills <- 0
       }
       #ancient.kills <- readJSON$ancientkills
       
@@ -76,14 +79,19 @@ while(match.count < NUM_MATCHES) {
           triplekills <- readJSON$players$multi_kills[j, 2]
           ultrakills <- 0
           rampages <- 0
-        } else {
+        } else if ("2" %in% names(readJSON$players$multi_kills)) {
           doublekills <- readJSON$players$multi_kills[j, 1]
           triplekills <- 0
           ultrakills <- 0
           rampages <- 0
         }
+        else {
+          doublekills <- 0
+          triplekills <- 0
+          ultrakills <- 0
+          rampages <- 0
+        }
       }
-      
       if ("kill_streats" %in% names(readJSON$players)) {
         max.streak <- max(as.integer(colnames(readJSON$players$kill_streaks[j, which(!is.na(readJSON$players$kill_streaks[j, ]))])))
       } else {
@@ -111,13 +119,13 @@ while(match.count < NUM_MATCHES) {
                                           gpm,
                                           xpm,
                                           #ancient.kills,
-                                          #roshan.kills,
+                                          roshan.kills,
                                           first.blood,
-                                          #doublekills,
-                                          #triplekills,
-                                          #ultrakills,
-                                          #rampages,
-                                          #best.streak,
+                                          doublekills,
+                                          triplekills,
+                                          ultrakills,
+                                          rampages,
+                                          max.streak,
                                           sentries.placed,
                                           obs.placed))
     }
@@ -129,4 +137,3 @@ full.data <- left_join(hero.data, macro.data,
 full.data$won <- ifelse(full.data$hero.radiant == 1, ifelse(full.data$radiant.win == T, 1, 0),
                         ifelse(full.data$radiant.win == F, 1, 0))
 full.data <- select(full.data, -radiant.win, -hero.radiant)
-
