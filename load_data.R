@@ -6,11 +6,12 @@ library(dplyr)
 # Initiate a file connection
 fileCon <- gzfile('~/Dota/data/raw_data.gz', open="rb")
 
+#z <- fromJSON(fileCon)
 
-zz <- stream_in(fileCon, pagesize = 10000, progress = "=")
+#zz <- stream_in(fileCon, pagesize = 10000, progress = "=")
 
 # Initiate all variables needed for the homemade stream function
-NUM_MATCHES <- 5000
+NUM_MATCHES <- 10
 match.count <- 0
 line.count <- 0
 
@@ -110,6 +111,13 @@ while(match.count < NUM_MATCHES) {
         obs.placed <- 0
       }
       
+      item0 <- readJSON$players$item_0[j]
+      item1 <- readJSON$players$item_1[j]
+      item2 <- readJSON$players$item_2[j]
+      item3 <- readJSON$players$item_3[j]
+      item4 <- readJSON$players$item_4[j]
+      item5 <- readJSON$players$item_5[j]
+      
       hero.data <- rbind(hero.data, data.frame(match.id,
                                           hero.id,
                                           hero.radiant,
@@ -127,7 +135,13 @@ while(match.count < NUM_MATCHES) {
                                           rampages,
                                           max.streak,
                                           sentries.placed,
-                                          obs.placed))
+                                          obs.placed,
+                                          item0,
+                                          item1,
+                                          item2,
+                                          item3,
+                                          item4,
+                                          item5))
     }
   }
 }
