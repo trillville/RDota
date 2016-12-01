@@ -40,109 +40,55 @@ while(match.count < NUM_MATCHES) {
     radiant.win <- readJSON$radiant_win
     macro.data <- rbind(macro.data, data.frame(match.id, game.length, radiant.win))
     
-    # Cycle through each hero in the match, creating a list of kills, and other info.
-    for(j in 1:10) {
-      hero.id <- readJSON$players$hero_id[j]
-      hero.radiant <- ifelse(j <= 5, 1, 0)
-      kills <- readJSON$players$kills[j]
-      deaths <- readJSON$players$deaths[j]
-      assists <- readJSON$players$deaths[j]
-      gpm <- readJSON$players$gold_per_min[j]
-      xpm <- readJSON$players$xp_per_min[j]
-      abandon <- ifelse(readJSON$players$leaver_status == 3, 1, 0)
-      
-      if ("npc_dota_roshan" %in% names(readJSON$players$killed)) {
-        roshan.kills <- readJSON$players$killed$npc_dota_roshan
-      } else {
-        roshan.kills <- 0
-      }
-      #ancient.kills <- readJSON$ancientkills
-      
-      if ("CHAT_MESSAGE_FIRSTBLOOD" %in% readJSON$objectives$type) {
-        first.blood <- ifelse(readJSON$objectives$player1[which(readJSON$objectives$type == "CHAT_MESSAGE_FIRSTBLOOD")] == (j-1), 1, 0)
-      } else {
-        first.blood <- 0
-      }
-      
-      if ("multi_kills" %in% names(readJSON$players)) {
-        if ("5" %in% names(readJSON$players$multi_kills)) {
-          doublekills <- readJSON$players$multi_kills[j, 1]
-          triplekills <- readJSON$players$multi_kills[j, 2]
-          ultrakills <- readJSON$players$multi_kills[j, 3]
-          rampages <- rowSums(data.frame(readJSON$players$multi_kills[j, 4:ncol(readJSON$players$multi_kills)]))
-        } else if ("4" %in% names(readJSON$players$multi_kills)) {
-          doublekills <- readJSON$players$multi_kills[j, 1]
-          triplekills <- readJSON$players$multi_kills[j, 2]
-          ultrakills <- readJSON$players$multi_kills[j, 3]
-          rampages <- 0
-        } else if ("3" %in% names(readJSON$players$multi_kills)) {
-          doublekills <- readJSON$players$multi_kills[j, 1]
-          triplekills <- readJSON$players$multi_kills[j, 2]
-          ultrakills <- 0
-          rampages <- 0
-        } else if ("2" %in% names(readJSON$players$multi_kills)) {
-          doublekills <- readJSON$players$multi_kills[j, 1]
-          triplekills <- 0
-          ultrakills <- 0
-          rampages <- 0
-        }
-        else {
-          doublekills <- 0
-          triplekills <- 0
-          ultrakills <- 0
-          rampages <- 0
-        }
-      }
-      if ("kill_streats" %in% names(readJSON$players)) {
-        max.streak <- max(as.integer(colnames(readJSON$players$kill_streaks[j, which(!is.na(readJSON$players$kill_streaks[j, ]))])))
-      } else {
-        max.streak <- 0
-      }
-      
-      if ("sen_log" %in% names(readJSON$players)) {
-        sentries.placed <- length(readJSON$players$sen_log[[j]])
-      } else {
-        sentries.placed <- 0
-      }
-      
-      if ("obs_log" %in% names(readJSON$players)) {
-        obs.placed <- length(readJSON$players$obs_log[[j]])
-      } else {
-        obs.placed <- 0
-      }
-      
-      item0 <- readJSON$players$item_0[j]
-      item1 <- readJSON$players$item_1[j]
-      item2 <- readJSON$players$item_2[j]
-      item3 <- readJSON$players$item_3[j]
-      item4 <- readJSON$players$item_4[j]
-      item5 <- readJSON$players$item_5[j]
-      
-      hero.data <- rbind(hero.data, data.frame(match.id,
-                                          hero.id,
-                                          hero.radiant,
-                                          kills,
-                                          deaths,
-                                          assists,
-                                          gpm,
-                                          xpm,
-                                          #ancient.kills,
-                                          roshan.kills,
-                                          first.blood,
-                                          doublekills,
-                                          triplekills,
-                                          ultrakills,
-                                          rampages,
-                                          max.streak,
-                                          sentries.placed,
-                                          obs.placed,
-                                          item0,
-                                          item1,
-                                          item2,
-                                          item3,
-                                          item4,
-                                          item5))
-    }
+    hero.id <- readJSON$players$hero_id
+    kills <- readJSON$players$kills
+    deaths <- readJSON$players$deaths
+    assists <- readJSON$players$deaths
+    gpm <- readJSON$players$gold_per_min
+    xpm <- readJSON$players$xp_per_min
+    abandon <- ifelse(readJSON$players$leaver_status == 3, 1, 0)
+    roshan.kills <- readJSON$players$killed$npc_dota_roshan
+    #first.blood <- ifelse(readJSON$objectives$player1[which(readJSON$objectives$type == "CHAT_MESSAGE_FIRSTBLOOD")] == (j-1), 1, 0)
+    
+    doublekills <- readJSON$players$multi_kills$`2`
+    triplekills <- readJSON$players$multi_kills$`3`
+    ultrakills <- readJSON$players$multi_kills$`4`
+    rampages <- readJSON$players$multi_kills$`5`
+    #max.streak <- max(as.integer(colnames(readJSON$players$kill_streaks[j, which(!is.na(readJSON$players$kill_streaks[j, ]))])))
+    #sentries.placed <- length(readJSON$players$sen_log[[j]])
+    #obs.placed <- length(readJSON$players$obs_log[[j]])
+    
+    item0 <- readJSON$players$item_0
+    item1 <- readJSON$players$item_1
+    item2 <- readJSON$players$item_2
+    item3 <- readJSON$players$item_3
+    item4 <- readJSON$players$item_4
+    item5 <- readJSON$players$item_5
+    
+    hero.data <- rbind(hero.data,   data.frame(rep(match.id,length(hero.id)),
+                                    hero.id,
+                                    #hero.radiant,
+                                    kills,
+                                    deaths,
+                                    assists,
+                                    gpm,
+                                    xpm,
+                                    #ancient.kills,
+                                    roshan.kills,
+                                    #first.blood,
+                                    doublekills,
+                                    triplekills,
+                                    ultrakills,
+                                    rampages,
+                                    #max.streak,
+                                    #sentries.placed,
+                                    #obs.placed,
+                                    item0,
+                                    item1,
+                                    item2,
+                                    item3,
+                                    item4,
+                                    item5))
   }
 }
 
@@ -151,3 +97,19 @@ full.data <- left_join(hero.data, macro.data,
 full.data$won <- ifelse(full.data$hero.radiant == 1, ifelse(full.data$radiant.win == T, 1, 0),
                         ifelse(full.data$radiant.win == F, 1, 0))
 full.data <- select(full.data, -radiant.win, -hero.radiant)
+
+# OHE encoding for all of the items
+item.cols <- c("item0", "item1", "item2", "item3", "item4", "item5")
+item.matrix <- as.matrix(full.data[, item.cols])
+item.matrix <- item.matrix + 1 #start at 1 instead of zero
+
+min.item <- min(item.matrix)
+max.item <- max(item.matrix)
+ohe.matrix <- matrix(nrow = nrow(full.data), ncol = (1 + max.item - min.item))
+
+for (i in min.item:max.item) {
+  ohe.matrix[, i] <- apply(item.matrix, 1, function(x) ifelse(i %in% x, 1, 0))
+}
+colnames(ohe.matrix) <- paste("item", as.character(seq(min.item, max.item)), sep = ".")
+
+full.data <- cbind(full.data, ohe.matrix)
