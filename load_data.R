@@ -115,3 +115,10 @@ for (i in min.item:max.item) {
 colnames(ohe.matrix) <- paste("item", as.character(seq(min.item, max.item)), sep = ".")
 
 full.data <- cbind(full.data, ohe.matrix)
+full.data[is.na(full.data)] <- 0
+full.data <- Filter(function(x) (length(unique(x)) > 1), full.data)
+full.data <- select(full.data, -item0, -item1, -item2, -item3, -item4, -item5) %>%
+  mutate(win.rate.game.length = won * game.length)
+
+
+
