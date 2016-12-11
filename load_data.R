@@ -11,7 +11,7 @@ fileCon <- gzfile('~/Dota/data/raw_data.gz', open="rb")
 #zz <- stream_in(fileCon, pagesize = 10000, progress = "=")
 
 # Initiate all variables needed for the homemade stream function
-NUM_MATCHES <- 10
+NUM_MATCHES <- 10000
 match.count <- 0
 line.count <- 0
 
@@ -41,19 +41,21 @@ while(match.count < NUM_MATCHES) {
     macro.data <- rbind(macro.data, data.frame(match.id, game.length, radiant.win))
     
     hero.id <- readJSON$players$hero_id
+    match.id <- rep(match.id,length(hero.id))
     kills <- readJSON$players$kills
+    hero.radiant <- ifelse(readJSON$players$player_slot > 10, 0, 1)
     deaths <- readJSON$players$deaths
     assists <- readJSON$players$deaths
     gpm <- readJSON$players$gold_per_min
     xpm <- readJSON$players$xp_per_min
     abandon <- ifelse(readJSON$players$leaver_status == 3, 1, 0)
-    roshan.kills <- readJSON$players$killed$npc_dota_roshan
+    roshan.kills <- if (is.null(readJSON$players$killed$npc_dota_roshan)) rep(NA, 10) else readJSON$players$killed$npc_dota_roshan
     #first.blood <- ifelse(readJSON$objectives$player1[which(readJSON$objectives$type == "CHAT_MESSAGE_FIRSTBLOOD")] == (j-1), 1, 0)
     
-    doublekills <- readJSON$players$multi_kills$`2`
-    triplekills <- readJSON$players$multi_kills$`3`
-    ultrakills <- readJSON$players$multi_kills$`4`
-    rampages <- readJSON$players$multi_kills$`5`
+    doublekills <- if (is.null(readJSON$players$multi_kills$`2`)) rep(NA, 10) else readJSON$players$multi_kills$`2`
+    triplekills <- if (is.null(readJSON$players$multi_kills$`3`)) rep(NA, 10) else readJSON$players$multi_kills$`3`
+    ultrakills <- if (is.null(readJSON$players$multi_kills$`4`)) rep(NA, 10) else readJSON$players$multi_kills$`4`
+    rampages <- if (is.null(readJSON$players$multi_kills$`5`)) rep(NA, 10) else readJSON$players$multi_kills$`5`
     #max.streak <- max(as.integer(colnames(readJSON$players$kill_streaks[j, which(!is.na(readJSON$players$kill_streaks[j, ]))])))
     #sentries.placed <- length(readJSON$players$sen_log[[j]])
     #obs.placed <- length(readJSON$players$obs_log[[j]])
@@ -65,9 +67,9 @@ while(match.count < NUM_MATCHES) {
     item4 <- readJSON$players$item_4
     item5 <- readJSON$players$item_5
     
-    hero.data <- rbind(hero.data,   data.frame(rep(match.id,length(hero.id)),
+    hero.data <- rbind(hero.data,   data.frame(match.id,
                                     hero.id,
-                                    #hero.radiant,
+                                    hero.radiant,
                                     kills,
                                     deaths,
                                     assists,
